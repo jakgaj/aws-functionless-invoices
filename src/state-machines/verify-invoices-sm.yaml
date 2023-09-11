@@ -1,0 +1,6 @@
+Comment: Invoice Processing
+StartAt: Pass
+States:
+  Pass:
+    Type: Pass
+    End: true

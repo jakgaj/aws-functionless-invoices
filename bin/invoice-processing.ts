@@ -3,22 +3,23 @@ import 'source-map-support/register';
 import * as cdk from 'aws-cdk-lib';
 import { SharedResourcesStack } from '../lib/shared-resources-stack';
 import { ImportInvoicesStack } from '../lib/import-invoices-stack';
-import { EnrichInvoicesStack } from '../lib/enrich-invoices-stack';
+import { VerifyInvoicesStack } from '../lib/verify-invoices-stack';
 
 const app = new cdk.App();
 const regions = app.node.tryGetContext('regions');
 
 const sharedStack = new SharedResourcesStack(app, 'SharedResourcesStack', {
-  env: { region: regions.shared },
+  env: { region: regions.primary }
 });
 
 const importStack = new ImportInvoicesStack(app, 'ImportInvoicesStack', {
-  env: { region: regions.import },
+  env: { region: regions.primary }
 });
 
-const enrichStack = new EnrichInvoicesStack(app, 'EnrichInvoicesStack', {
-  env: { region: regions.enrich },
+const verifyStack = new VerifyInvoicesStack(app, 'VerifyInvoicesStack', {
+  env: { region: regions.secondary }
 });
 
+verifyStack.addDependency(sharedStack);
 importStack.addDependency(sharedStack);
-enrichStack.addDependency(sharedStack);
+importStack.addDependency(verifyStack);

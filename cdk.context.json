@@ -1,7 +1,6 @@
 {
-    "regions": {
-        "shared": "eu-central-1",
-        "import": "eu-central-1",
-        "enrich": "eu-west-1"
-    }
+  "regions": {
+    "primary": "eu-central-1",
+    "secondary": "eu-west-1"
+  }
 }

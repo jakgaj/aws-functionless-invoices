@@ -4,10 +4,13 @@ import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as s3deploy from 'aws-cdk-lib/aws-s3-deployment';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import * as ssm from 'aws-cdk-lib/aws-ssm';
+import * as secrets from 'aws-cdk-lib/aws-secretsmanager';
 
 export class SharedResourcesStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
+
+    const regions = this.node.tryGetContext('regions');
 
     // S3 bucket
     const bucket = new s3.Bucket(this, 'Bucket', {
@@ -20,7 +23,7 @@ export class SharedResourcesStack extends cdk.Stack {
 
     // File upload to bucket
     const jsonFile = new s3deploy.DeployTimeSubstitutedFile(this, 'JsonFile', {
-      source: 'src/new-invoices.json',
+      source: 'src/bucket-content/invoices-metadata.json',
       destinationBucket: bucket,
       substitutions: {}
     });
@@ -43,12 +46,30 @@ export class SharedResourcesStack extends cdk.Stack {
       partitionKey: { name: 'invoiceId', type: dynamodb.AttributeType.STRING },
       billing: dynamodb.Billing.onDemand(),
       tableClass: dynamodb.TableClass.STANDARD_INFREQUENT_ACCESS,
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
       deletionProtection: false,
       pointInTimeRecovery: true,
       replicas: [
-        { region: this.node.tryGetContext('regions')['enrich'] }
+        { region: this.node.tryGetContext('regions').secondary }
       ],
     });
+
+    // Secrets Manager secret object
+    const secret = new secrets.Secret(this, 'InvoiceStamp', {
+      secretName: 'InvoiceStamp',
+      description: 'Stamp values for EnhanceInvoices state machine',
+      // replicaRegions: [
+      //   secrets.ReplicaRegion = {
+      //     region: regions.secondary
+      //   }
+      // ],
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+      secretObjectValue: {
+        verifiedBy: cdk.SecretValue.unsafePlainText('John Verifyer'),
+        verifiedAt: cdk.SecretValue.unsafePlainText(new Date().toISOString())
+      },
+      
+    })
 
   }
 }

@@ -82,9 +82,9 @@ States:
               invoiceId.$: $.generate.invoiceId
               fileName.$: $.fileName
               invoiceData.$: $.data
-            DetailType: ImportInvoices
+            DetailType: NewInvoiceImported
             EventBusName: Invoices
-            Source: NewInvoiceImported
+            Source: ImportInvoices
           Comment: Create formatted event with invoice data
         Failed:
           Type: Fail
