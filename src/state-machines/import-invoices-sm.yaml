@@ -7,7 +7,7 @@ States:
     Parameters:
       Names:
         - /invoices/config/bucketName
-        - /invoices/config/jsonKey
+        - /invoices/config/jsonFile
     Resource: arn:aws:states:::aws-sdk:ssm:getParameters
     ResultSelector:
       bucketName.$: $.Parameters[0].Value

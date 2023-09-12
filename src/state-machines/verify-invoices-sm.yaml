@@ -50,7 +50,7 @@ States:
       TableName: Invoices
       Key:
         invoiceId:
-          S.$: $.generate.invoiceId
+          S.$: $.invoiceId
       UpdateExpression: >-
         SET invoiceStatus = :invoiceStatus, updatedAt = :updatedAt,
         fiscalYear = :fiscalYear, countryCode = :countryCode, currencyCode = :currencyCode
