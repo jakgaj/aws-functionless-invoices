@@ -4,6 +4,7 @@ import * as events from 'aws-cdk-lib/aws-events';
 import * as targets from 'aws-cdk-lib/aws-events-targets';
 import * as states from 'aws-cdk-lib/aws-stepfunctions';
 import * as logs from 'aws-cdk-lib/aws-logs';
+import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
 
 export class ImportInvoicesStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -30,6 +31,26 @@ export class ImportInvoicesStack extends cdk.Stack {
         level: states.LogLevel.ALL,
       }
     });
+
+    // IAM permissions for state machine role
+    machine.addToRolePolicy(
+      new PolicyStatement({
+        actions: [
+          "dynamodb:PutItem",
+          "dynamodb:GetItem",
+          "dynamodb:UpdateItem",
+          "ssm:GetParameter*",
+          "events:PutEvents",
+          "s3:GetObject",
+        ],
+        resources: [
+          `arn:aws:dynamodb:*:${this.account}:table/Invoices`,
+          `arn:aws:ssm:*:${this.account}:parameter/invoices/config/*`,
+          `arn:aws:events:*:${this.account}:event-bus/Invoices`,
+          `arn:aws:s3:::aws-functionless-invoices-${this.account}-${this.region}/*`
+        ],
+      })
+    );
 
     // EventBridge event rule to trigger state machine
     new events.Rule(this, 'ImportInvoicesRule', {

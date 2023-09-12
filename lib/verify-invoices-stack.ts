@@ -4,6 +4,7 @@ import * as events from 'aws-cdk-lib/aws-events';
 import * as targets from 'aws-cdk-lib/aws-events-targets';
 import * as states from 'aws-cdk-lib/aws-stepfunctions';
 import * as logs from 'aws-cdk-lib/aws-logs';
+import { PolicyStatement } from 'aws-cdk-lib/aws-iam';
 
 export class VerifyInvoicesStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -29,6 +30,29 @@ export class VerifyInvoicesStack extends cdk.Stack {
       }
     });
 
+    // IAM permissions for state machine role
+    machine.addToRolePolicy(
+      new PolicyStatement({
+        actions: [
+          "dynamodb:PutItem",
+          "dynamodb:GetItem",
+          "dynamodb:UpdateItem",
+          "events:PutEvents",
+          "secretsmanager:GetSecretValue",
+        ],
+        resources: [
+          `arn:aws:dynamodb:*:${this.account}:table/Invoices`,
+          `arn:aws:events:*:${this.account}:event-bus/Invoices`,
+          `arn:aws:secretsmanager:*:${this.account}:secret:InvoiceStamp*`
+        ],
+      })
+    );
+
+    const logGroup = new logs.LogGroup(this, 'VerifyEventsLogGroup', {
+      logGroupName: '/aws/events/VerifyInvoices',
+      removalPolicy: cdk.RemovalPolicy.DESTROY
+    });
+
     // EventBridge event rule to trigger state machine
     new events.Rule(this, 'VerifyInvoicesRule', {
       ruleName: 'VerifyInvoices',
@@ -40,17 +64,25 @@ export class VerifyInvoicesStack extends cdk.Stack {
       },
       enabled: true,
       targets: [
-        // Step Functions state machine
         new targets.SfnStateMachine(machine, {
           input: events.RuleTargetInput.fromEventPath('$.detail')
         }),
-        // CloudWatch log group
-        new targets.CloudWatchLogGroup(
-          new logs.LogGroup(this, 'VerifyEventsLogGroup', {
-            logGroupName: '/aws/events/VerifyInvoices',
-            removalPolicy: cdk.RemovalPolicy.DESTROY
-          })
-        )
+        new targets.CloudWatchLogGroup(logGroup)
+      ]
+    });
+
+    // EventBridge event rule to trigger state machine
+    new events.Rule(this, 'InvoicesVerifiedRule', {
+      ruleName: 'NewInvoiceVerified',
+      description: 'Log events related to verified invoices',
+      eventBus: bus,
+      eventPattern: {
+        source: [ "VerifyInvoices" ],
+        detailType: [ "NewInvoiceVerified" ]
+      },
+      enabled: true,
+      targets: [
+        new targets.CloudWatchLogGroup(logGroup)
       ]
     });
 

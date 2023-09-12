@@ -14,10 +14,11 @@ export class SharedResourcesStack extends cdk.Stack {
 
     // S3 bucket
     const bucket = new s3.Bucket(this, 'Bucket', {
+      bucketName: `aws-functionless-invoices-${this.account}-${this.region}`,
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
       encryption: s3.BucketEncryption.S3_MANAGED,
       enforceSSL: true,
-      versioned: true,
+      versioned: false,
       removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
 
@@ -50,7 +51,7 @@ export class SharedResourcesStack extends cdk.Stack {
       deletionProtection: false,
       pointInTimeRecovery: true,
       replicas: [
-        { region: this.node.tryGetContext('regions').secondary }
+        { region: regions.secondary }
       ],
     });
 
@@ -58,17 +59,15 @@ export class SharedResourcesStack extends cdk.Stack {
     const secret = new secrets.Secret(this, 'InvoiceStamp', {
       secretName: 'InvoiceStamp',
       description: 'Stamp values for EnhanceInvoices state machine',
-      // replicaRegions: [
-      //   secrets.ReplicaRegion = {
-      //     region: regions.secondary
-      //   }
-      // ],
+      replicaRegions: [
+        { region: regions.secondary }
+      ],
       removalPolicy: cdk.RemovalPolicy.DESTROY,
       secretObjectValue: {
-        verifiedBy: cdk.SecretValue.unsafePlainText('John Verifyer'),
-        verifiedAt: cdk.SecretValue.unsafePlainText(new Date().toISOString())
-      },
-      
+        fiscalYear: cdk.SecretValue.unsafePlainText(new Date().getFullYear().toString()),
+        countryCode: cdk.SecretValue.unsafePlainText('DE'),
+        currencyCode: cdk.SecretValue.unsafePlainText('EUR')
+      }  
     })
 
   }
