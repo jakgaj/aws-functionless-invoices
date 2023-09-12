@@ -50,8 +50,7 @@ States:
               invoiceId:
                 S.$: $.generate.invoiceId
             UpdateExpression: >-
-              SET fileName = :fileName, invoiceStatus = :invoiceStatus,
-              updatedAt = :updatedAt
+              SET fileName = :fileName, invoiceStatus = :invoiceStatus, updatedAt = :updatedAt
             ExpressionAttributeValues:
               ':updatedAt':
                 S.$: $.generate.updatedAt
@@ -79,8 +78,11 @@ States:
           End: true
           Parameters:
             Detail:
-              invoiceId.$: $.generate.invoiceId
+              documentType.$: $.documentType
               fileName.$: $.fileName
+              invoiceId.$: $.generate.invoiceId
+              status.$: $.generate.status
+              updatedAt.$: $.generate.updatedAt
               invoiceData.$: $.data
             DetailType: NewInvoiceImported
             EventBusName: Invoices
