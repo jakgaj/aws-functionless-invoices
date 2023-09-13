@@ -1,14 +1,46 @@
-# Welcome to your CDK TypeScript project
+# Sample Functionless Application
 
-This is a blank project for CDK development with TypeScript.
+## Invoice Processing
 
-The `cdk.json` file tells the CDK Toolkit how to execute your app.
+This is a CDK application (TypeScript).
+
+![Aplication Architecture](doc/aws-functionless-invoices.png)
+
+## Components
+
+Application deploys 3 CDK stacks in 2 regions.
+
+- SharedResourcesStack (primary region)
+- ImportInvoicesStack (primary region)
+- VerifyInvoicesStack (secondary region)
+
+Application consists of the following AWS resources:
+
+- DynamoDB global table
+- Step Functions state machines
+- EventBridge event buses
+- EventBridge event rules
+- SSM Parameter Store parameters
+- Secrets Manager secret
+- CloudWatch log groups
+- S3 bucket
+
+## Context
+
+Modify the `cdk.context.json` file to modify deployment regions:
+
+```json
+{
+  "regions": {
+    "primary": "eu-central-1",
+    "secondary": "eu-west-1"
+  }
+}
+```
 
 ## Useful commands
 
-* `npm run build`   compile typescript to js
-* `npm run watch`   watch for changes and compile
-* `npm run test`    perform the jest unit tests
-* `cdk deploy`      deploy this stack to your default AWS account/region
-* `cdk diff`        compare deployed stack with current state
-* `cdk synth`       emits the synthesized CloudFormation template
+* `npm run build`         compiles TypeScript to JavaScript
+* `cdk synth --all`       emits the synthesized CloudFormation templates
+* `cdk deploy --all`      deploys all stacks to your default AWS account
+* `cdk destroy --all`     destroys all stacks from your AWS account
