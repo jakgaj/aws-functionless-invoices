@@ -25,7 +25,7 @@ Application consists of the following AWS resources:
 
 ## Context
 
-Modify the `cdk.context.json` file to modify deployment regions:
+Modify the `cdk.context.json` file to change deployment regions:
 
 ```json
 {
