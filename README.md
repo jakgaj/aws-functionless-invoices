@@ -2,13 +2,11 @@
 
 ## Invoice Processing
 
-This is a CDK application (TypeScript).
-
 ![Aplication Architecture](doc/aws-functionless-invoices.png)
 
 ## Components
 
-Application deploys 3 CDK stacks in 2 regions.
+This CDK application deploys 3 CDK stacks in 2 regions:
 
 - SharedResourcesStack (primary region)
 - ImportInvoicesStack (primary region)
