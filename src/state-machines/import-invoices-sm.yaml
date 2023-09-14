@@ -43,21 +43,18 @@ States:
           Comment: Add invoice ID and status
         Update Invoice DB:
           Type: Task
-          Resource: arn:aws:states:::dynamodb:updateItem
+          Resource: arn:aws:states:::dynamodb:putItem
           Parameters:
             TableName: Invoices
-            Key:
+            Item:
               invoiceId:
                 S.$: $.generate.invoiceId
-            UpdateExpression: >-
-              SET fileName = :fileName, invoiceStatus = :invoiceStatus, updatedAt = :updatedAt
-            ExpressionAttributeValues:
-              ':updatedAt':
-                S.$: $.generate.updatedAt
-              ':fileName':
+              fileName:
                 S.$: $.fileName
-              ':invoiceStatus':
+              invoiceStatus:
                 S.$: $.generate.status
+              updatedAt:
+                S.$: $.generate.updatedAt
           Next: New Invoice Event
           ResultPath: $.result.dynamoDb
           Retry:

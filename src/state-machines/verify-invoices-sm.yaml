@@ -1,6 +1,11 @@
 Comment: Invoice Processing
-StartAt: Validate Status
+StartAt: Get Ready
 States:
+  Get Ready:
+    Type: Wait
+    Seconds: 30
+    Next: Validate Status
+    Comment: Delay the workflow execution
   Validate Status:
     Type: Choice
     Choices:
